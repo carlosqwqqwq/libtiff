@@ -1,8 +1,6 @@
 # CMake build for libtiff
-# Run "cmake" to generate the build files for your platform
 #
 # Copyright © 2015 Open Microscopy Environment / University of Dundee
-# Copyright © 2021 Roger Leigh <rleigh@codelibre.net>
 # Written by Roger Leigh <rleigh@codelibre.net>
 #
 # Permission to use, copy, modify, distribute, and sell this software and
@@ -24,227 +22,514 @@
 # LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 # OF THIS SOFTWARE.
 
-cmake_minimum_required(VERSION 3.10)
+# Images for tiff2bw (8-bit RGB only)
+set(RGBIMAGES
+    images/palette-1c-8b.tiff
+    images/rgb-3c-8b.tiff
+    images/quad-lzw-compat.tiff
+)
 
-# Default policy is from 3.10
-cmake_policy(VERSION 3.10)
+# This list should contain all of the TIFF files in the 'images'
+# subdirectory which are intended to be used as input images for
+# tests.  All of these files should use the extension ".tiff".
+set(TIFFIMAGES
+    images/custom_dir_EXIF_GPS.tiff
+    images/logluv-3c-16b.tiff
+    images/minisblack-1c-16b.tiff
+    images/minisblack-1c-8b.tiff
+    images/minisblack-2c-8b-alpha.tiff
+    images/miniswhite-1c-1b.tiff
+    images/palette-1c-1b.tiff
+    images/palette-1c-4b.tiff
+    images/palette-1c-8b.tiff
+    images/rgb-3c-16b.tiff
+    images/rgb-3c-8b.tiff
+    images/quad-lzw-compat.tiff
+    images/lzw-single-strip.tiff
+    images/testfax4.tiff
+    images/testfax3_bug_513.tiff
+    images/32bpp-None.tiff
+)
+# TIFF images using old-jpeg.  Unused unless JPEG support is enabled.
+set(TIFFIMAGES_OJPEG)
 
-if(POLICY CMP0074)
-  # Allow find_package() to use the ZLIB_ROOT variable, if available.
-  cmake_policy(SET CMP0074 NEW)
-endif()
-
-# Find CMake modules in cmake/
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
-# Read version information from configure.ac.
-include(AutotoolsVersion)
-message(STATUS "Building tiff version ${LIBTIFF_VERSION_FULL}")
-
-# Project definition
-set(CMAKE_C_STANDARD 99)
-project(tiff
-        VERSION "${LIBTIFF_VERSION}"
-        LANGUAGES C CXX)
-
-if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-  # libtiff is being included as a subproject of some other project.
-  set(TIFF_INSTALL_DEFAULT OFF)
-else()
-  set(TIFF_INSTALL_DEFAULT ON)
-  option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-endif()
-
-if (BUILD_SHARED_LIBS)
-  set(TIFF_STATIC_LIBS_DEFAULT FALSE)
-else()
-  set(TIFF_STATIC_LIBS_DEFAULT TRUE)
- endif()
-
-option(tiff-static "build TIFF static libraries" ${TIFF_STATIC_LIBS_DEFAULT})
-option(tiff-tools "build TIFF tools" ON)
-option(tiff-tests "build TIFF tests" ON)
-option(tiff-contrib "build TIFF contrib" ON)
-option(tiff-docs "build TIFF documentation" ON)
-option(tiff-deprecated "build TIFF deprecated features" OFF)
-option(tiff-install "install TIFF targets" ${TIFF_INSTALL_DEFAULT})
-
-if (tiff-static)
-  set(TIFF_BUILD_LIB_VALUE STATIC)
-else()
-  set(TIFF_BUILD_LIB_VALUE SHARED)
-endif()
-
-# Disable deprecated features to ensure clean build
-if (tiff-deprecated)
-  add_definitions(-DTIFF_DISABLE_DEPRECATED)
-endif()
-
-# Autotools compatibility
-include(AutotoolsCompat)
-
-# Compiler checks (warning flags, etc.)
-include(CompilerChecks)
-
-# Linker checks (version script, etc.)
-include(LinkerChecks)
-
-# Processor checks (endianness, fill order, floating point, etc.)
-include(ProcessorChecks)
-
-# Checks for headers
-include(IncludeChecks)
-
-# Checks for functions and other symbols
-include(SymbolChecks)
-
-# Standard installation paths
-include(GNUInstallDirs)
-# Documentation install directory (default to cmake project docdir)
-set(LIBTIFF_DOCDIR "${CMAKE_INSTALL_DOCDIR}")
-
-# CTest testing
-enable_testing()
-
-# Checks for type presence and size
-include(TypeSizeChecks)
-
-# Check for POSIX Large File Support (LFS)
-include(LargeFileSupport)
-
-# Options for internal codec support
-include(InternalCodecs)
-
-# Check for Deflate codec
-include(DeflateCodec)
-
-# Check for PixarLog codec
-include(PixarLogCodec)
-
-# Check for JPEG codec
-include(JPEGCodec)
-
-# Check for JBIG codec
-include(JBIGCodec)
-
-# Check for LERC codec
-include(LERCCodec)
-
-# Check for LZMA codec
-include(LZMACodec)
-
-# Check for ZSTD codec
-include(ZSTDCodec)
-
-# Check for WebP codec
-include(WebPCodec)
-
-# Option for C++ libtiffxx library
-include(CXXLibrary)
-
-# Checks for OpenGL support
-include(OpenGLChecks)
-
-# Windows support
-include(WindowsSupport)
-
-# Orthogonal features
-include(LibraryFeatures)
-
-
-# math.h/libm portability
-find_package(CMath REQUIRED)
-
-# Release support
-include(Release)
-
-# Process subdirectories
-add_subdirectory(port)
-add_subdirectory(libtiff)
-if(tiff-tools)
-  add_subdirectory(tools)
-endif()
-if(tiff-tests)
-  add_subdirectory(test)
-endif()
-if(tiff-contrib)
-  add_subdirectory(contrib)
-endif()
-add_subdirectory(build)
-if(tiff-docs)
-  add_subdirectory(doc)
-endif()
-
-# pkg-config support
-include(PkgConfig)
-
-message(STATUS "")
-message(STATUS "Libtiff is now configured for ${CMAKE_SYSTEM}")
-message(STATUS "")
-if (NOT LIBTIFF_RELEASE_VERSION STREQUAL LIBTIFF_VERSION_FULL)
-  message(STATUS "  Libtiff release version      ${LIBTIFF_RELEASE_VERSION} is not equal to build version!")
-endif()
-message(STATUS "  Libtiff build version:       ${LIBTIFF_VERSION_FULL}")
-message(STATUS "  Libtiff library version:     ${SO_VERSION}")
-message(STATUS "  Libtiff release date:        ${LIBTIFF_RELEASE_DATE}")
-message(STATUS "")
-message(STATUS "  Installation directory:             ${prefix}")
-message(STATUS "  Documentation directory:            ${LIBTIFF_DOCDIR}")
-message(STATUS "  C compiler:                         ${CMAKE_C_COMPILER}")
-message(STATUS "  C++ compiler:                       ${CMAKE_CXX_COMPILER}")
-message(STATUS "  Build shared libraries:             ${BUILD_SHARED_LIBS}")
-message(STATUS "  Build tools:                        ${tiff-tools}")
-message(STATUS "  Build tests:                        ${tiff-tests}")
-message(STATUS "  Build contrib:                      ${tiff-contrib}")
-message(STATUS "  Build docs:                         ${tiff-docs}")
-message(STATUS "  Build deprecated features:          ${tiff-deprecated}")
-message(STATUS "  Enable linker symbol versioning:    ${HAVE_LD_VERSION_SCRIPT}")
-message(STATUS "  Support Microsoft Document Imaging: ${mdi}")
-message(STATUS "  Use win32 IO:                       ${USE_WIN32_FILEIO}")
-message(STATUS "")
-message(STATUS " Support for internal codecs:")
-message(STATUS "  CCITT Group 3 & 4 algorithms:       ${ccitt}")
-message(STATUS "  Macintosh PackBits algorithm:       ${packbits}")
-message(STATUS "  LZW algorithm:                      ${lzw}")
-message(STATUS "  ThunderScan 4-bit RLE algorithm:    ${thunder}")
-message(STATUS "  NeXT 2-bit RLE algorithm:           ${next}")
-message(STATUS "  LogLuv high dynamic range encoding: ${logluv}")
-message(STATUS "")
-message(STATUS " Support for external codecs:")
-message(STATUS "  ZLIB support:                       Requested:${zlib} Availability:${ZLIB_FOUND} Support:${ZLIB_SUPPORT}")
-if(ZLIB_SUPPORT)
-  message(STATUS "  libdeflate support:                 Requested:${libdeflate} Availability:${DEFLATE_FOUND} Support:${LIBDEFLATE_SUPPORT}")
-else()
-  message(STATUS "  libdeflate support:                 Requested:${libdeflate} Availability:${DEFLATE_FOUND} Support:${LIBDEFLATE_SUPPORT} (Depends on ZLIB Support)")
-endif()
-if(ZLIB_SUPPORT)
-  message(STATUS "  Pixar log-format algorithm:         Requested:${pixarlog} Availability:${ZLIB_FOUND} Support:${PIXARLOG_SUPPORT}")
-else()
-  message(STATUS "  Pixar log-format algorithm:         Requested:${pixarlog} Availability:${ZLIB_FOUND} Support:${PIXARLOG_SUPPORT} (Depends on ZLIB Support)")
-endif()
-message(STATUS "  JPEG support:                       Requested:${jpeg} Availability:${JPEG_FOUND} Support:${JPEG_SUPPORT}")
 if(JPEG_SUPPORT)
-  message(STATUS "  Old JPEG support:                   Requested:${old-jpeg} Availability:${JPEG_SUPPORT} Support:${OJPEG_SUPPORT}")
-else()
-  message(STATUS "  Old JPEG support:                   Requested:${old-jpeg} Availability:${JPEG_SUPPORT} Support:${OJPEG_SUPPORT} (Depends on JPEG Support)")
+    list(APPEND TIFFIMAGES images/quad-tile.jpg.tiff)
 endif()
-if(JPEG_SUPPORT AND HAVE_JPEGTURBO_DUAL_MODE_8_12)
-  message(STATUS "  JPEG 8/12 bit dual mode:            Support: yes (libjpeg turbo >= 3.0 dual mode)")
-else()
-  message(STATUS "  JPEG 8/12 bit dual mode:            Requested:${jpeg12} Availability:${JPEG12_FOUND} Support:${JPEG_DUAL_MODE_8_12}")
+
+if (OJPEG_SUPPORT)
+    list(APPEND TIFFIMAGES_OJPEG
+        images/ojpeg_zackthecat_subsamp22_single_strip.tiff
+        images/ojpeg_chewey_subsamp21_multi_strip.tiff
+        images/ojpeg_single_strip_no_rowsperstrip.tiff
+    )
 endif()
-message(STATUS "  ISO JBIG support:                   Requested:${jbig} Availability:${JBIG_FOUND} Support:${JBIG_SUPPORT}")
-if(ZLIB_SUPPORT)
-  message(STATUS "  LERC support:                       Requested:${lerc} Availability:${LERC_FOUND} Support:${LERC_SUPPORT}")
-else()
-  message(STATUS "  LERC support:                       Requested:${lerc} Availability:${LERC_FOUND} Support:${LERC_SUPPORT} (Depends on ZLIB Support)")
+
+set(BMPIMAGES
+    images/palette-1c-8b.bmp
+    images/rgb-3c-8b.bmp)
+
+set(GIFIMAGES
+    images/palette-1c-8b.gif)
+
+set(PNMIMAGES
+    images/minisblack-1c-8b.pgm
+    images/miniswhite-1c-1b.pbm
+    images/rgb-3c-16b.ppm
+    images/rgb-3c-8b.ppm)
+
+# All uncompressed image files
+set(UNCOMPRESSEDIMAGES
+    images/minisblack-1c-16b.tiff
+    images/minisblack-1c-8b.tiff
+    images/miniswhite-1c-1b.tiff
+    images/palette-1c-1b.tiff
+    images/palette-1c-4b.tiff
+    images/palette-1c-8b.tiff
+    images/rgb-3c-8b.tiff)
+
+# This list should include all of the files in the 'images'
+# subdirectory which are intended to be distributed.  This may include
+# files which are not currently used by the tests.
+set(IMAGES_EXTRA_DIST
+    images/README.txt
+    images/miniswhite-1c-1b.g3
+    images/32bpp-None-jpeg.tiff
+    ${BMPIMAGES}
+    ${GIFIMAGES}
+    ${PNMIMAGES}
+    ${TIFFIMAGES})
+
+set(noinst_HEADERS tifftest.h)
+
+set(simple_tests)
+
+# Test programs
+add_executable(test_signed_tags ../placeholder.h)
+target_sources(test_signed_tags PRIVATE test_signed_tags.c)
+set_target_properties(test_signed_tags PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(test_signed_tags PRIVATE tiff tiff_port)
+list(APPEND simple_tests test_signed_tags)
+
+add_executable(ascii_tag ../placeholder.h)
+target_sources(ascii_tag PRIVATE ascii_tag.c)
+set_target_properties(ascii_tag PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(ascii_tag PRIVATE tiff tiff_port)
+list(APPEND simple_tests ascii_tag)
+
+add_executable(long_tag ../placeholder.h)
+target_sources(long_tag PRIVATE long_tag.c check_tag.c)
+set_target_properties(long_tag PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(long_tag PRIVATE tiff tiff_port)
+list(APPEND simple_tests long_tag)
+
+add_executable(short_tag ../placeholder.h)
+target_sources(short_tag PRIVATE short_tag.c check_tag.c)
+set_target_properties(short_tag PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(short_tag PRIVATE tiff tiff_port)
+list(APPEND simple_tests short_tag)
+
+add_executable(strip_rw ../placeholder.h)
+target_sources(strip_rw PRIVATE strip_rw.c strip.c test_arrays.c test_arrays.h)
+set_target_properties(strip_rw PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(strip_rw PRIVATE tiff tiff_port)
+list(APPEND simple_tests strip_rw)
+
+add_executable(rewrite ../placeholder.h)
+target_sources(rewrite PRIVATE rewrite_tag.c)
+set_target_properties(rewrite PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(rewrite PRIVATE tiff tiff_port)
+list(APPEND simple_tests rewrite)
+
+if(JPEG_SUPPORT)
+  add_executable(raw_decode ../placeholder.h)
+  target_sources(raw_decode PRIVATE raw_decode.c)
+  set_target_properties(raw_decode PROPERTIES LINKER_LANGUAGE CXX)
+  target_link_libraries(raw_decode PRIVATE tiff tiff_port JPEG::JPEG)
+  list(APPEND simple_tests raw_decode)
 endif()
-message(STATUS "  LZMA2 support:                      Requested:${lzma} Availability:${liblzma_FOUND} Support:${LZMA_SUPPORT}")
-message(STATUS "  ZSTD support:                       Requested:${zstd} Availability:${ZSTD_USABLE} Support:${ZSTD_SUPPORT}")
-message(STATUS "  WEBP support:                       Requested:${webp} Availability:${WebP_FOUND} Support:${WEBP_SUPPORT}")
-message(STATUS "")
-message(STATUS "  C++ support:                        ${tiff-cxx} (requested) ${CXX_SUPPORT} (availability)")
-message(STATUS "")
-# message(STATUS "  X Athena Widgets support:           ${HAVE_XAW}")
-message(STATUS "  OpenGL support:                     Requested:${tiff-opengl} Availability:${HAVE_OPENGL} Support:${OPENGL_SUPPORT}")
-message(STATUS "")
+
+add_executable(custom_dir ../placeholder.h)
+target_sources(custom_dir PRIVATE custom_dir.c)
+set_target_properties(custom_dir PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(custom_dir PRIVATE tiff tiff_port)
+list(APPEND simple_tests custom_dir)
+
+# Uses private functions from static library
+if(NOT BUILD_SHARED_LIBS)
+  add_executable(rational_precision2double ../placeholder.h)
+  target_sources(rational_precision2double PRIVATE rational_precision2double.c)
+  set_target_properties(rational_precision2double PROPERTIES LINKER_LANGUAGE CXX)
+  target_link_libraries(rational_precision2double PRIVATE tiff tiff_port)
+  list(APPEND simple_tests rational_precision2double)
+  
+  add_executable(test_write_read_tags ../placeholder.h)
+  target_sources(test_write_read_tags PRIVATE test_write_read_tags.c)
+  set_target_properties(test_write_read_tags PROPERTIES LINKER_LANGUAGE CXX)
+  target_link_libraries(test_write_read_tags PRIVATE tiff)
+  list(APPEND simple_tests test_write_read_tags)
+  
+  add_executable(test_transferfunction_write_read ../placeholder.h)
+  target_sources(test_transferfunction_write_read PRIVATE test_transferfunction_write_read.c)
+  set_target_properties(test_transferfunction_write_read PROPERTIES LINKER_LANGUAGE CXX)
+  target_link_libraries(test_transferfunction_write_read PRIVATE tiff)
+  list(APPEND simple_tests test_transferfunction_write_read)
+endif()
+
+add_executable(custom_dir_EXIF_231 ../placeholder.h)
+target_sources(custom_dir_EXIF_231 PRIVATE custom_dir_EXIF_231.c)
+set_target_properties(custom_dir_EXIF_231 PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(custom_dir_EXIF_231 PRIVATE tiff tiff_port)
+list(APPEND simple_tests custom_dir_EXIF_231)
+
+add_executable(defer_strile_loading ../placeholder.h)
+target_sources(defer_strile_loading PRIVATE defer_strile_loading.c)
+set_target_properties(defer_strile_loading PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(defer_strile_loading PRIVATE tiff tiff_port)
+list(APPEND simple_tests defer_strile_loading)
+
+add_executable(defer_strile_writing ../placeholder.h)
+target_sources(defer_strile_writing PRIVATE defer_strile_writing.c)
+set_target_properties(defer_strile_writing PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(defer_strile_writing PRIVATE tiff tiff_port)
+list(APPEND simple_tests defer_strile_writing)
+
+add_executable(test_directory ../placeholder.h)
+target_sources(test_directory PRIVATE test_directory.c)
+set_target_properties(test_directory PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(test_directory PRIVATE tiff tiff_port)
+list(APPEND simple_tests test_directory)
+
+add_executable(test_IFD_enlargement ../placeholder.h)
+target_sources(test_IFD_enlargement PRIVATE test_IFD_enlargement.c)
+set_target_properties(test_IFD_enlargement PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(test_IFD_enlargement PRIVATE tiff tiff_port)
+list(APPEND simple_tests test_IFD_enlargement)
+
+add_executable(testtypes ../placeholder.h)
+target_sources(testtypes PRIVATE testtypes.c)
+set_target_properties(testtypes PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(testtypes PRIVATE tiff tiff_port)
+list(APPEND simple_tests testtypes)
+
+add_executable(test_open_options ../placeholder.h)
+target_sources(test_open_options PRIVATE test_open_options.c)
+set_target_properties(test_open_options PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(test_open_options PRIVATE tiff tiff_port)
+list(APPEND simple_tests test_open_options)
+
+add_executable(test_append_to_strip ../placeholder.h)
+target_sources(test_append_to_strip PRIVATE test_append_to_strip.c)
+set_target_properties(test_append_to_strip PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(test_append_to_strip PRIVATE tiff tiff_port)
+list(APPEND simple_tests test_append_to_strip)
+
+add_executable(test_ifd_loop_detection ../placeholder.h)
+target_sources(test_ifd_loop_detection PRIVATE test_ifd_loop_detection.c)
+set_target_properties(test_ifd_loop_detection PROPERTIES LINKER_LANGUAGE CXX)
+target_link_libraries(test_ifd_loop_detection PRIVATE tiff tiff_port)
+target_compile_definitions(test_ifd_loop_detection PRIVATE SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\")
+list(APPEND simple_tests test_ifd_loop_detection)
+
+if(WEBP_SUPPORT AND EMSCRIPTEN)
+  # Emscripten is pretty finnicky about linker flags.
+  # It needs --shared-memory if and only if atomics or bulk-memory is used.
+  foreach(target
+          ascii_tag
+          long_tag
+          short_tag
+          strip_rw
+          rewrite
+          custom_dir
+          defer_strile_loading
+          defer_strile_writing
+          )
+    target_link_options(${target} PUBLIC "-Wl,--shared-memory")
+  endforeach()
+  if(JPEG_SUPPORT)
+    target_link_options(raw_decode PUBLIC "-Wl,--shared-memory")
+  endif()
+endif()
+
+set(TEST_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/output")
+file(MAKE_DIRECTORY "${TEST_OUTPUT}")
+
+set(tiff_test_extra_args "-DLIBTIFF=$<TARGET_FILE:tiff>")
+
+if(tiff-tools)
+  list(APPEND tiff_test_extra_args "-DTIFFCP=$<TARGET_FILE:tiffcp>")
+  list(APPEND tiff_test_extra_args "-DTIFFINFO=$<TARGET_FILE:tiffinfo>")
+  list(APPEND tiff_test_extra_args "-DTIFFSPLIT=$<TARGET_FILE:tiffsplit>")
+endif()
+
+if(WIN32)
+  list(APPEND tiff_test_extra_args "-DWIN32=${WIN32}")
+endif()
+if(CYGWIN)
+  list(APPEND tiff_test_extra_args "-DCYGWIN=${CYGWIN}")
+endif()
+
+function(tiff_test_convert name command1 command2 command3 infile outfile validate)
+  add_test(NAME "${name}"
+           COMMAND "${CMAKE_COMMAND}"
+           "-DCONVERT_COMMAND1=${command1}"
+           "-DCONVERT_COMMAND2=${command2}"
+           "-DCONVERT_COMMAND3=${command3}"
+           "-DINFILE=${infile}"
+           "-DOUTFILE=${outfile}"
+           "-DVALIDATE=${validate}"
+           ${tiff_test_extra_args}
+           -P "${CMAKE_CURRENT_SOURCE_DIR}/TiffTest.cmake")
+endfunction()
+
+function(tiff_test_stdout name suffix command infile outfile)
+  if (suffix)
+     set(name "${name}-${suffix}")
+  endif()
+  add_test(NAME "${name}"
+           COMMAND "${CMAKE_COMMAND}"
+           "-DSTDOUT_COMMAND=${command}"
+           "-DINFILE=${infile}"
+           "-DOUTFILE=${outfile}"
+           ${tiff_test_extra_args}
+           -P "${CMAKE_CURRENT_SOURCE_DIR}/TiffTest.cmake")
+endfunction()
+
+function(tiff_test_stdout_noargs name command)
+  add_test(NAME "${name}"
+          COMMAND "${CMAKE_COMMAND}"
+          "-DSTDOUT_COMMAND=$<TARGET_FILE:${command}>"
+          ${tiff_test_extra_args}
+          -P "${CMAKE_CURRENT_SOURCE_DIR}/TiffTest.cmake"
+          WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+  set_tests_properties("${name}" PROPERTIES ENVIRONMENT
+          "srcdir=${CMAKE_CURRENT_SOURCE_DIR}")
+endfunction()
+
+function(tiff_test_reader name command infile)
+  add_test(NAME "${name}"
+           COMMAND "${CMAKE_COMMAND}"
+           "-DREADER_COMMAND=${command}"
+           "-DINFILE=${infile}"
+           ${tiff_test_extra_args}
+           -P "${CMAKE_CURRENT_SOURCE_DIR}/TiffTest.cmake")
+endfunction()
+
+function(add_convert_test_multi_out_in commandname1 commandname2 commandname3
+      categoryname commandargs1 commandargs2 commandargs3
+      image validate)
+  string(REPLACE " " "^" escaped_commandargs1 "${commandargs1}")
+  string(REPLACE " " "^" escaped_commandargs2 "${commandargs2}")
+  string(REPLACE " " "^" escaped_commandargs3 "${commandargs3}")
+  get_filename_component(name "${image}" NAME)
+  get_filename_component(base "${image}" NAME_WE)
+  set(testname "${commandname1}-${categoryname}-${base}")
+  if(commandname1)
+    set(command1
+        "$<TARGET_FILE:${commandname1}>^${escaped_commandargs1}")
+  else()
+    set(command1)
+  endif()
+  if(commandname2)
+    set(command2
+        "$<TARGET_FILE:${commandname2}>^${escaped_commandargs2}")
+  else()
+    set(command2)
+  endif()
+  if(commandname3)
+    set(command3
+        "$<TARGET_FILE:${commandname3}>^${escaped_commandargs3}")
+  else()
+    set(command3)
+  endif()
+  set(infile "${TEST_OUTPUT}/${image}")
+  set(outfile "${TEST_OUTPUT}/${commandname1}-${categoryname}-${base}.tiff")
+  tiff_test_convert("${testname}" "${command1}" "${command2}" "${command3}"
+                    "${infile}" "${outfile}" "${validate}")
+endfunction()
+
+function(add_convert_test_multi commandname1 commandname2 commandname3
+      categoryname commandargs1 commandargs2 commandargs3
+      image validate)
+  string(REPLACE " " "^" escaped_commandargs1 "${commandargs1}")
+  string(REPLACE " " "^" escaped_commandargs2 "${commandargs2}")
+  string(REPLACE " " "^" escaped_commandargs3 "${commandargs3}")
+  get_filename_component(name "${image}" NAME)
+  get_filename_component(base "${image}" NAME_WE)
+  set(testname "${commandname1}-${categoryname}-${base}")
+  if(commandname1)
+    set(command1
+        "$<TARGET_FILE:${commandname1}>^${escaped_commandargs1}")
+  else()
+    set(command1)
+  endif()
+  if(commandname2)
+    set(command2
+        "$<TARGET_FILE:${commandname2}>^${escaped_commandargs2}")
+  else()
+    set(command2)
+  endif()
+  if(commandname3)
+    set(command3
+        "$<TARGET_FILE:${commandname3}>^${escaped_commandargs3}")
+  else()
+    set(command3)
+  endif()
+  set(infile "${CMAKE_CURRENT_SOURCE_DIR}/${image}")
+  set(outfile "${TEST_OUTPUT}/${commandname1}-${categoryname}-${base}.tiff")
+  tiff_test_convert("${testname}" "${command1}" "${command2}" "${command3}"
+                    "${infile}" "${outfile}" "${validate}")
+endfunction()
+
+function(add_convert_test commandname
+      categoryname commandargs
+      image validate)
+    add_convert_test_multi("${commandname}" "" ""
+                           "${categoryname}" "${commandargs}" "" ""
+                           "${image}" "${validate}")
+endfunction()
+
+function(add_convert_tests_multi commandname1 commandname2 commandname3
+      categoryname
+      commandargs1 commandargs2 commandargs3
+      images validate)
+  foreach(file ${${images}})
+    add_convert_test_multi("${commandname1}" "${commandname2}"
+                           "${commandname3}" "${categoryname}"
+                           "${commandargs1}" "${commandargs2}"
+                           "${commandargs3}" "${file}" "${validate}")
+  endforeach()
+endfunction()
+
+function(add_convert_tests commandname categoryname commandargs images validate)
+  foreach(file ${${images}})
+    add_convert_test("${commandname}" "${categoryname}"
+                     "${commandargs}" "${file}" "${validate}")
+  endforeach()
+endfunction()
+
+function(add_stdout_test commandname suffix commandargs image)
+  string(REPLACE " " "^" escaped_commandargs "${commandargs}")
+  get_filename_component(name "${image}" NAME)
+  get_filename_component(base "${image}" NAME_WE)
+  set(testname "${commandname}-${base}")
+  set(command "$<TARGET_FILE:${commandname}>^${escaped_commandargs}")
+  set(infile "${CMAKE_CURRENT_SOURCE_DIR}/${image}")
+  set(outfile "${TEST_OUTPUT}/${commandname}-${name}")
+  string(REGEX REPLACE "\\.tiff\$" "" name "${name}")
+  tiff_test_stdout("${testname}" "${suffix}" "${command}" "${infile}" "${outfile}")
+endfunction()
+
+function(add_reader_test commandname commandargs image)
+  string(REPLACE " " "^" escaped_commandargs "${commandargs}")
+  get_filename_component(name "${image}" NAME)
+  get_filename_component(base "${image}" NAME_WE)
+  set(testname "${commandname}-${base}")
+  set(command "$<TARGET_FILE:${commandname}>^${escaped_commandargs}")
+  set(infile "${CMAKE_CURRENT_SOURCE_DIR}/${image}")
+  tiff_test_reader("${testname}" "${command}" "${infile}")
+endfunction()
+
+# Plain executables with no arguments
+foreach(target IN LISTS simple_tests)
+  tiff_test_stdout_noargs("${target}" "${target}")
+endforeach()
+
+if(tiff-tools)
+  # PPM
+  add_convert_test(ppm2tiff miniswhite "" "images/miniswhite-1c-1b.pbm" TRUE)
+  add_convert_test(ppm2tiff minisblack "" "images/minisblack-1c-8b.pgm" TRUE)
+  add_convert_test(ppm2tiff rgb        "" "images/rgb-3c-16b.ppm"       TRUE)
+  add_convert_test(ppm2tiff rgb        "" "images/rgb-3c-8b.ppm"        TRUE)
+
+  # tiffcp
+  # Reading / writing TIFF images with different encoding schemes.
+  add_convert_tests(tiffcp TIFFIMG    ""                         TIFFIMAGES TRUE)
+
+  # Convert some images to another coding scheme.
+  add_convert_test(tiffcp   g3         "-c g3"         "images/miniswhite-1c-1b.tiff" FALSE)
+  add_convert_test(tiffcp   g31d       "-c g3:1d"      "images/miniswhite-1c-1b.tiff" FALSE)
+  add_convert_test(tiffcp   g31dfill   "-c g3:1d:fill" "images/miniswhite-1c-1b.tiff" FALSE)
+  add_convert_test(tiffcp   g32d       "-c g3:2d"      "images/miniswhite-1c-1b.tiff" FALSE)
+  add_convert_test(tiffcp   g32dfill   "-c g3:2d:fill" "images/miniswhite-1c-1b.tiff" FALSE)
+  add_convert_test(tiffcp   g4         "-c g4"         "images/miniswhite-1c-1b.tiff" FALSE)
+  add_convert_test_multi(tiffcp tiffcp "" logluv "-c none" "-c sgilog" ""
+                         "images/logluv-3c-16b.tiff"    FALSE)
+  add_convert_test_multi(tiffcp thumbnail "" thumbnail "-c g3:1d" "" ""
+                         "images/miniswhite-1c-1b.tiff"    FALSE)
+  add_convert_test(tiffcp   none       "-c none"       "images/quad-lzw-compat.tiff" FALSE)
+  add_convert_test(tiffcp   noner1     "-c none -r 1"  "images/lzw-single-strip.tiff" FALSE)
+  add_convert_test(tiffcp   float64_lzw_2_le "-c lzw:2"       "images/test_float64_predictor2_le_lzw.tif" FALSE)
+  add_convert_test(tiffcp   float64_lzw_2_be "-c lzw:2"       "images/test_float64_predictor2_be_lzw.tif" FALSE)
+  if(WEBP_SUPPORT)
+    add_convert_test(tiffcp   webp_lossless_rgba_alpha_fully_opaque "-c none"    "images/webp_lossless_rgba_alpha_fully_opaque.tif" FALSE)
+  endif()
+  
+  add_convert_test(tiff2rgba 32BPP    "-B 255 -n"     "images/32bpp-None.tiff" TRUE)
+  if(JPEG_SUPPORT)
+    add_convert_test(tiffcp 32BPP-JPEG "-c jpeg"      "images/32bpp-None-jpeg.tiff" TRUE)
+  endif()
+
+  if(JBIG_SUPPORT)
+    add_convert_test(tiffcp   jbig         "-c jbig"         "images/lzw-single-strip.tiff" TRUE)
+  endif()
+  
+  # Old-JPEG tests
+  #--- tiffcp does not support subsampled images, as the OldJPEG ones are ---
+  #    ToDo: a test for OldJPEG is missing.
+  #add_convert_tests(test_tiffcp OldJPEG    ""                         TIFFIMAGES_OJPEG TRUE)
+
+  # tiffdump
+  add_reader_test(tiffdump "" "images/miniswhite-1c-1b.tiff")
+
+  # tiffinfo
+  add_reader_test(tiffinfo "-c -D -d -j -s" "images/custom_dir_EXIF_GPS.tiff")
+  add_reader_test(tiffinfo "-c -D -d -j -s" "images/minisblack-1c-16b.tiff")
+  add_reader_test(tiffinfo " " "images/tiff_with_subifd_chain.tif")
+
+  # tiffcp split/join
+  foreach(image ${UNCOMPRESSEDIMAGES})
+    list(APPEND ESCAPED_UNCOMPRESSED "${CMAKE_CURRENT_SOURCE_DIR}/${image}")
+  endforeach()
+  string(REPLACE ";" "^" ESCAPED_UNCOMPRESSED "${ESCAPED_UNCOMPRESSED}")
+  add_test(NAME "tiffcp-split"
+           COMMAND "${CMAKE_COMMAND}"
+           "-DTESTFILES=${ESCAPED_UNCOMPRESSED}"
+           "-DCONJOINED=${TEST_OUTPUT}/tiffcp-split-conjoined.tiff"
+           "-DSPLITFILE=${TEST_OUTPUT}/tiffcp-split-split-"
+           ${tiff_test_extra_args}
+           -P "${CMAKE_CURRENT_SOURCE_DIR}/TiffSplitTest.cmake")
+  add_test(NAME "tiffcp-split-join"
+           COMMAND "${CMAKE_COMMAND}"
+           "-DTESTFILES=${ESCAPED_UNCOMPRESSED}"
+           "-DCONJOINED=${TEST_OUTPUT}/tiffcp-split-join-conjoined.tiff"
+           "-DSPLITFILE=${TEST_OUTPUT}/tiffcp-split-join-split-"
+           "-DRECONJOINED=${TEST_OUTPUT}/tiffcp-split-join-reconjoined.tiff"
+           ${tiff_test_extra_args}
+           -P "${CMAKE_CURRENT_SOURCE_DIR}/TiffSplitTest.cmake")
+
+  # PDF
+  add_stdout_test(tiff2pdf "" "" "images/miniswhite-1c-1b.tiff" TRUE)
+
+  # PS
+  add_stdout_test(tiff2ps "ps-1" "-a -p -1" "images/miniswhite-1c-1b.tiff" TRUE)
+  add_stdout_test(tiff2ps "ps-2" "-a -p -2" "images/miniswhite-1c-1b.tiff" TRUE)
+  add_stdout_test(tiff2ps "ps-3" "-a -p -3" "images/miniswhite-1c-1b.tiff" TRUE)
+  add_stdout_test(tiff2ps "eps-1" "-e -1" "images/miniswhite-1c-1b.tiff" TRUE)
+
+  # BW
+  add_convert_tests(tiff2bw default      ""                         RGBIMAGES TRUE)
+
+  # RGBA
+  add_convert_tests(tiff2rgba default    ""                         TIFFIMAGES TRUE)
+  # RGBA (old-jpeg)
+  add_convert_tests(tiff2rgba default    ""                         TIFFIMAGES_OJPEG TRUE)
+  # Test rotations
+  add_convert_tests(tiffcrop  R90        "-R90"                     TIFFIMAGES TRUE)
+  # Test flip (mirror)
+  add_convert_tests(tiffcrop  doubleflip "-F both"                  TIFFIMAGES TRUE)
+  # Test extracting a section 60 pixels wide and 60 pixels high
+  add_convert_tests(tiffcrop  extract    "-U px -E top -X 60 -Y 60" TIFFIMAGES TRUE)
+  # Test extracting the first and fourth quarters from the left side.
+  add_convert_tests(tiffcrop  extractz14 "-E left -Z1:4,2:4"        TIFFIMAGES TRUE)
+endif()
