@@ -1,3 +1,4 @@
+#
 # Tag Image File Format (TIFF) Software
 #
 # Copyright (C) 2004, Andrey Kiselev <dron@ak4719.spb.edu>
@@ -23,424 +24,265 @@
 
 # Process this file with automake to produce Makefile.in.
 
-AUTOMAKE_OPTIONS = 1.11 color-tests parallel-tests foreign
+docdir = $(LIBTIFF_DOCDIR)/manual
 
-LIBTIFF = $(top_builddir)/libtiff/libtiff.la
-
-# Environment parameters to be used during tests
-TESTS_ENVIRONMENT = \
-	MAKE="$(MAKE)" \
-	MAKEFLAGS="$(MAKEFLAGS)" \
-	MEMCHECK="$(MEMCHECK)"
+rst_sources = \
+	index.rst \
+	build.rst \
+	internals.rst \
+	tools/tiffgt.rst \
+	tools/tiffdither.rst \
+	tools/tiff2pdf.rst \
+	tools/tiff2ps.rst \
+	tools/ppm2tiff.rst \
+	tools/raw2tiff.rst \
+	tools/fax2tiff.rst \
+	tools/tiffcrop.rst \
+	tools/tiff2bw.rst \
+	tools/fax2ps.rst \
+	tools/thumbnail.rst \
+	tools/tiffcmp.rst \
+	tools/tiffdump.rst \
+	tools/tiff2rgba.rst \
+	tools/tiffinfo.rst \
+	tools/rgb2ycbcr.rst \
+	tools/tiffset.rst \
+	tools/tiffsplit.rst \
+	tools/tiffmedian.rst \
+	tools/pal2rgb.rst \
+	tools/tiffcp.rst \
+	project/license.rst \
+	project/index.rst \
+	project/acknowledgements.rst \
+	project/bugs.rst \
+	project/mailinglist.rst \
+	project/psc.rst \
+	addingtags.rst \
+	specification/index.rst \
+	specification/bigtiff.rst \
+	specification/coverage.rst \
+	specification/technote2.rst \
+	specification/coverage-bigtiff.rst \
+	releases/v3.4beta028.rst \
+	releases/v4.0.9.rst \
+	releases/v3.9.0.rst \
+	releases/v4.0.7.rst \
+	releases/v3.5.7.rst \
+	releases/v4.0.0.rst \
+	releases/v3.7.0beta2.rst \
+	releases/v3.7.1.rst \
+	releases/index.rst \
+	releases/v3.8.0.rst \
+	releases/v4.1.0.rst \
+	releases/historical.rst \
+	releases/v3.5.6beta.rst \
+	releases/v3.6.1.rst \
+	releases/v4.2.0.rst \
+	releases/v3.7.0.rst \
+	releases/v4.0.1.rst \
+	releases/v3.5.1.rst \
+	releases/v4.0.10.rst \
+	releases/v4.0.6.rst \
+	releases/v4.0.8.rst \
+	releases/v3.9.1.rst \
+	releases/v3.4beta029.rst \
+	releases/v4.3.0.rst \
+	releases/v3.4beta031.rst \
+	releases/v3.7.0alpha.rst \
+	releases/v3.6.0.rst \
+	releases/v3.4beta036.rst \
+	releases/v4.0.4beta.rst \
+	releases/v3.8.1.rst \
+	releases/v4.4.0.rst \
+	releases/v3.4beta035.rst \
+	releases/v3.4beta032.rst \
+	releases/v3.4beta007.rst \
+	releases/v3.9.0beta.rst \
+	releases/v3.8.2.rst \
+	releases/v3.4beta018.rst \
+	releases/v3.7.3.rst \
+	releases/v3.4beta016.rst \
+	releases/v3.7.4.rst \
+	releases/v3.5.2.rst \
+	releases/v4.0.5.rst \
+	releases/v3.4beta024.rst \
+	releases/v3.5.5.rst \
+	releases/v4.0.2.rst \
+	releases/v3.9.5.rst \
+	releases/v3.9.2.rst \
+	releases/v3.4beta033.rst \
+	releases/v3.4beta034.rst \
+	releases/v3.9.3.rst \
+	releases/v3.9.4.rst \
+	releases/v3.7.0beta.rst \
+	releases/v3.5.4.rst \
+	releases/v4.0.3.rst \
+	releases/v3.5.3.rst \
+	releases/v4.0.4.rst \
+	releases/v3.7.2.rst \
+	releases/v4.5.0.rst \
+	releases/v4.5.1.rst \
+	releases/v4.6.0.rst \
+	releases/v4.7.0.rst \
+	rfcs/index.rst \
+	rfcs/rfc1_psc.rst \
+	rfcs/rfc2_restoring_needed_tools.rst \
+	functions.rst \
+	tools.rst \
+	terms.rst \
+	contrib.rst \
+	functions/TIFFRGBAImage.rst \
+	functions/TIFFGetField.rst \
+	functions/TIFFSetDirectory.rst \
+	functions/TIFFWriteRawStrip.rst \
+	functions/TIFFcolor.rst \
+	functions/TIFFstrip.rst \
+	functions/TIFFReadDirectory.rst \
+	functions/TIFFReadRawTile.rst \
+	functions/libtiff.rst \
+	functions/TIFFPrintDirectory.rst \
+	functions/TIFFsize.rst \
+	functions/TIFFReadRGBATile.rst \
+	functions/TIFFswab.rst \
+	functions/TIFFmemory.rst \
+	functions/TIFFtile.rst \
+	functions/TIFFReadEncodedTile.rst \
+	functions/TIFFWriteDirectory.rst \
+	functions/TIFFSetField.rst \
+	functions/TIFFWriteScanline.rst \
+	functions/TIFFClose.rst \
+	functions/TIFFFieldName.rst \
+	functions/TIFFFieldReadCount.rst \
+	functions/TIFFError.rst \
+	functions/TIFFOpen.rst \
+	functions/TIFFOpenOptions.rst \
+	functions/TIFFcodec.rst \
+	functions/TIFFFlush.rst \
+	functions/TIFFDataWidth.rst \
+	functions/TIFFReadRawStrip.rst \
+	functions/TIFFReadTile.rst \
+	functions/TIFFFieldWriteCount.rst \
+	functions/TIFFbuffer.rst \
+	functions/TIFFWriteRawTile.rst \
+	functions/TIFFWarning.rst \
+	functions/TIFFFieldDataType.rst \
+	functions/TIFFWriteEncodedStrip.rst \
+	functions/TIFFFieldPassCount.rst \
+	functions/TIFFReadRGBAImage.rst \
+	functions/TIFFReadScanline.rst \
+	functions/TIFFReadEncodedStrip.rst \
+	functions/TIFFFieldTag.rst \
+	functions/TIFFWriteTile.rst \
+	functions/TIFFReadRGBAStrip.rst \
+	functions/TIFFquery.rst \
+	functions/TIFFWriteEncodedTile.rst \
+	functions/_TIFFauxiliary.rst \
+	functions/_TIFFRewriteField.rst \
+	functions/TIFFAccessTagMethods.rst \
+	functions/TIFFClientInfo.rst \
+	functions/TIFFCreateDirectory.rst \
+	functions/TIFFCustomDirectory.rst \
+	functions/TIFFCustomTagList.rst \
+	functions/TIFFDeferStrileArrayWriting.rst \
+	functions/TIFFFieldQuery.rst \
+	functions/TIFFMergeFieldInfo.rst \
+	functions/TIFFProcFunctions.rst \
+	functions/TIFFReadFromUserBuffer.rst \
+	functions/TIFFSetTagExtender.rst \
+	functions/TIFFStrileQuery.rst \
+	libtiff.rst \
+	multi_page.rst \
+	images.rst
 
 EXTRA_DIST = \
-	$(REFFILES) \
-	$(TESTSCRIPTS) \
-	$(IMAGES_EXTRA_DIST) \
 	CMakeLists.txt \
-	common.sh \
-	TiffSplitTest.cmake \
-	TiffTestCommon.cmake \
-	TiffTest.cmake
+	conf.py \
+	specification/bigtiffpr_images \
+	images \
+	$(rst_sources)
 
-# All of the tests to execute via 'make check'
-if TIFF_TESTS
-TESTS = $(check_PROGRAMS) $(TESTSCRIPTS_TO_RUN)
-endif
+if TIFF_DOCS
+if SPHINX
+doc-html: $(EXTRA_DIST) ../configure.ac
+	$(SPHINX_BUILD) \
+	-D "release=$(LIBTIFF_VERSION)" \
+	-D "version=$(LIBTIFF_MAJOR_VERSION).$(LIBTIFF_MINOR_VERSION)" \
+	-d "$(builddir)/cache" \
+	-b html \
+	"$(srcdir)" "$(builddir)/html"
+	touch doc-html
 
-# Tests which are expected to fail
-XFAIL_TESTS =
+doc-man: $(EXTRA_DIST) ../configure.ac
+	$(SPHINX_BUILD) \
+	-D "release=$(LIBTIFF_VERSION)" \
+	-D "version=$(LIBTIFF_MAJOR_VERSION).$(LIBTIFF_MINOR_VERSION)" \
+	-d "$(builddir)/cache" \
+	-b man \
+	"$(srcdir)" "$(builddir)/man"
+	touch doc-man
 
-# Extra files which should be cleaned by 'make clean'
-CLEANFILES = test_packbits.tif o-*
+man1_MANS = $(TIFF_MAN1_GEN)
+man3_MANS = $(TIFF_MAN3_GEN)
 
-JPEG_DEPENDENT_TESTSCRIPTS=\
-	tiff2rgba-quad-tile.jpg.sh \
-	tiff2rgba-ojpeg_zackthecat_subsamp22_single_strip.sh \
-	tiff2rgba-ojpeg_chewey_subsamp21_multi_strip.sh \
-	tiff2rgba-ojpeg_single_strip_no_rowsperstrip.sh \
-	tiff2rgba-32bpp-None-jpeg.sh \
-	tiffcp-32bpp-None-jpeg.sh \
-	tiffcrop-32bpp-None-jpeg.sh
+@TIFF_MAN_RULES@
 
-if HAVE_JPEG
-if TIFF_TOOLS
-JPEG_DEPENDENT_CHECK_PROG=raw_decode
-JPEG_DEPENDENT_TESTSCRIPTS_TO_RUN=$(JPEG_DEPENDENT_TESTSCRIPTS)
-endif
+all-local: doc-html doc-man
+
+clean-local:
+	rm -rf html
+	rm -rf man
+	rm -rf cache
+	rm -f doc-html
+	rm -f doc-man
+
+html_installdir = html
 else
-JPEG_DEPENDENT_CHECK_PROG=
-JPEG_DEPENDENT_TESTSCRIPTS_TO_RUN=
+# Sphinx not available
+doc-html:
+	echo "HTML documentation generation not configured (sphinx not available)"
+	exit 1
+
+doc-man:
+	echo "Manual page documentation generation not configured (sphinx not available)"
+	exit 1
+
+.PHONY: doc-html doc-man
+
+man1_MANS = $(TIFF_MAN1_PREBUILT)
+man3_MANS = $(TIFF_MAN3_PREBUILT)
+
+html_installdir = $(srcdir)/html-prebuilt
 endif
 
-JBIG_DEPENDENT_TESTSCRIPTS=\
-	tiffcp-lzw-single-strip-jbig.sh
 
-if HAVE_JBIG
-if TIFF_TOOLS
-JBIG_DEPENDENT_TESTSCRIPTS_TO_RUN=$(JBIG_DEPENDENT_TESTSCRIPTS)
-endif
+install-data-local: all-local
+	find $(html_installdir) -type d | sed -e 's;^$(html_installdir);;' | while read dir; do \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(docdir)$$dir'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(docdir)$$dir" || exit 1; \
+	done
+	find $(html_installdir) -type f | sed -e 's;^$(html_installdir);;' | while read docfile; do \
+	  docsubdir=$$(dirname $$docfile); \
+	  echo "$(INSTALL_DATA) '$(html_installdir)$$docfile' '$(DESTDIR)$(docdir)$$docsubdir'"; \
+	  $(INSTALL_DATA) "$(html_installdir)$$docfile" "$(DESTDIR)$(docdir)$$docsubdir"; \
+	done
+
+uninstall-local:
+	echo "rm -r $(DESTDIR)$(docdir)"
+	rm -r $(DESTDIR)$(docdir)
 else
-JBIG_DEPENDENT_TESTSCRIPTS_TO_RUN=
+# Documentation generation disabled
+doc-html:
+	echo "HTML documentation generation not configured"
+	exit 1
+
+doc-man:
+	echo "Manual page documentation generation not configured"
+	exit 1
+
+.PHONY: doc-html doc-man
+
 endif
 
-if BUILD_STATIC
-STATIC_CHECK_PROGS=rational_precision2double test_write_read_tags test_transferfunction_write_read
-endif
-
-# Executable programs which need to be built in order to support tests
-if TIFF_TESTS
-check_PROGRAMS = \
-	ascii_tag long_tag short_tag strip_rw rewrite custom_dir custom_dir_EXIF_231 \
-	defer_strile_loading defer_strile_writing test_directory test_IFD_enlargement test_open_options \
-	test_append_to_strip test_ifd_loop_detection testtypes test_signed_tags $(JPEG_DEPENDENT_CHECK_PROG) $(STATIC_CHECK_PROGS)
-endif
-
-# Test scripts to execute
-BASE_TESTSCRIPTS = \
-	ppm2tiff_pbm.sh \
-	ppm2tiff_pgm.sh \
-	ppm2tiff_ppm.sh \
-	fax2tiff.sh \
-	tiffcp-g3.sh \
-	tiffcp-g3-1d.sh \
-	tiffcp-g3-1d-fill.sh \
-	tiffcp-g3-2d.sh \
-	tiffcp-g3-2d-fill.sh \
-	tiffcp-g4.sh \
-	tiffcp-logluv.sh \
-	tiffcp-thumbnail.sh \
-	tiffcp-lzw-compat.sh \
-	tiffcp-lzw-scanline-decode.sh \
-	tiffdump.sh \
-	tiffinfo.sh \
-	tiffcp-split.sh \
-	tiffcp-split-join.sh \
-	tiff2ps-PS1.sh \
-	tiff2ps-PS2.sh \
-	tiff2ps-PS3.sh \
-	tiff2ps-EPS1.sh \
-	tiff2pdf.sh \
-	tiffcrop-doubleflip-logluv-3c-16b.sh \
-	tiffcrop-doubleflip-minisblack-1c-16b.sh \
-	tiffcrop-doubleflip-minisblack-1c-8b.sh \
-	tiffcrop-doubleflip-minisblack-2c-8b-alpha.sh \
-	tiffcrop-doubleflip-miniswhite-1c-1b.sh \
-	tiffcrop-doubleflip-palette-1c-1b.sh \
-	tiffcrop-doubleflip-palette-1c-4b.sh \
-	tiffcrop-doubleflip-palette-1c-8b.sh \
-	tiffcrop-doubleflip-rgb-3c-16b.sh \
-	tiffcrop-doubleflip-rgb-3c-8b.sh \
-	tiffcrop-extract-logluv-3c-16b.sh \
-	tiffcrop-extract-minisblack-1c-16b.sh \
-	tiffcrop-extract-minisblack-1c-8b.sh \
-	tiffcrop-extract-minisblack-2c-8b-alpha.sh \
-	tiffcrop-extract-miniswhite-1c-1b.sh \
-	tiffcrop-extract-palette-1c-1b.sh \
-	tiffcrop-extract-palette-1c-4b.sh \
-	tiffcrop-extract-palette-1c-8b.sh \
-	tiffcrop-extract-rgb-3c-16b.sh \
-	tiffcrop-extract-rgb-3c-8b.sh \
-	tiffcrop-extractz14-logluv-3c-16b.sh \
-	tiffcrop-extractz14-minisblack-1c-16b.sh \
-	tiffcrop-extractz14-minisblack-1c-8b.sh \
-	tiffcrop-extractz14-minisblack-2c-8b-alpha.sh \
-	tiffcrop-extractz14-miniswhite-1c-1b.sh \
-	tiffcrop-extractz14-palette-1c-1b.sh \
-	tiffcrop-extractz14-palette-1c-4b.sh \
-	tiffcrop-extractz14-palette-1c-8b.sh \
-	tiffcrop-extractz14-rgb-3c-16b.sh \
-	tiffcrop-extractz14-rgb-3c-8b.sh \
-	tiffcrop-R90-logluv-3c-16b.sh \
-	tiffcrop-R90-minisblack-1c-16b.sh \
-	tiffcrop-R90-minisblack-1c-8b.sh \
-	tiffcrop-R90-minisblack-2c-8b-alpha.sh \
-	tiffcrop-R90-miniswhite-1c-1b.sh \
-	tiffcrop-R90-palette-1c-1b.sh \
-	tiffcrop-R90-palette-1c-4b.sh \
-	tiffcrop-R90-palette-1c-8b.sh \
-	tiffcrop-R90-rgb-3c-16b.sh \
-	tiffcrop-R90-rgb-3c-8b.sh \
-	tiff2bw-palette-1c-8b.sh \
-	tiff2bw-quad-lzw-compat.sh \
-	tiff2bw-rgb-3c-8b.sh \
-	tiff2rgba-logluv-3c-16b.sh \
-	tiff2rgba-minisblack-1c-16b.sh \
-	tiff2rgba-minisblack-1c-8b.sh \
-	tiff2rgba-minisblack-2c-8b-alpha.sh \
-	tiff2rgba-miniswhite-1c-1b.sh \
-	tiff2rgba-palette-1c-1b.sh \
-	tiff2rgba-palette-1c-4b.sh \
-	tiff2rgba-palette-1c-8b.sh \
-	tiff2rgba-rgb-3c-16b.sh \
-	tiff2rgba-rgb-3c-8b.sh \
-	testfax4.sh \
-	testfax3_bug_513.sh \
-	testdeflatelaststripextradata.sh
-
-TESTSCRIPTS =$(BASE_TESTSCRIPTS) \
-	$(JPEG_DEPENDENT_TESTSCRIPTS) \
-	$(JBIG_DEPENDENT_TESTSCRIPTS)
-
-if TIFF_TOOLS
-TESTSCRIPTS_TO_RUN=$(BASE_TESTSCRIPTS) \
-	$(JPEG_DEPENDENT_TESTSCRIPTS_TO_RUN) \
-	$(JBIG_DEPENDENT_TESTSCRIPTS_TO_RUN)
-else
-TESTSCRIPTS_TO_RUN=
-endif
-
-# This list should contain the references files
-# from the 'refs' subdirectory
-REFFILES = \
-	refs/o-tiff2ps-EPS1.ps \
-	refs/o-tiff2ps-PS1.ps \
-	refs/o-tiff2ps-PS2.ps \
-	refs/o-tiff2ps-PS3.ps \
-	refs/o-testfax4.tiff \
-	refs/o-testfax3_bug_513.tiff \
-	refs/o-deflate-last-strip-extra-data.tiff
-
-# This list should contain all of the TIFF files in the 'images'
-# subdirectory which are intended to be used as input images for
-# tests.  All of these files should use the extension ".tiff".
-TIFFIMAGES = \
-	images/logluv-3c-16b.tiff \
-	images/minisblack-1c-16b.tiff \
-	images/minisblack-1c-8b.tiff \
-	images/minisblack-2c-8b-alpha.tiff \
-	images/miniswhite-1c-1b.tiff \
-	images/palette-1c-1b.tiff \
-	images/palette-1c-4b.tiff \
-	images/palette-1c-8b.tiff \
-	images/rgb-3c-16b.tiff \
-	images/rgb-3c-8b.tiff \
-	images/quad-tile.jpg.tiff \
-	images/quad-lzw-compat.tiff \
-	images/lzw-single-strip.tiff \
-	images/ojpeg_zackthecat_subsamp22_single_strip.tiff \
-	images/ojpeg_chewey_subsamp21_multi_strip.tiff \
-	images/ojpeg_single_strip_no_rowsperstrip.tiff \
-	images/testfax4.tiff \
-	images/deflate-last-strip-extra-data.tiff \
-	images/custom_dir_EXIF_GPS.tiff \
-	images/testfax3_bug_513.tiff \
-	images/32bpp-None.tiff
-
-PNMIMAGES = \
-	images/minisblack-1c-8b.pgm \
-	images/miniswhite-1c-1b.pbm \
-	images/rgb-3c-16b.ppm \
-	images/rgb-3c-8b.ppm
-
-# This list should include all of the files in the 'images'
-# subdirectory which are intended to be distributed.  This may include
-# files which are not currently used by the tests.
-IMAGES_EXTRA_DIST = \
-	images/README.txt \
-	images/miniswhite-1c-1b.g3 \
-	images/test_float64_predictor2_le_lzw.tif \
-	images/test_float64_predictor2_be_lzw.tif \
-	images/tiff_with_subifd_chain.tif \
-	images/test_ifd_loop_to_self.tif \
-	images/test_ifd_loop_to_first.tif \
-	images/test_two_ifds.tif \
-	images/test_ifd_loop_subifd.tif \
-	images/webp_lossless_rgba_alpha_fully_opaque.tif \
-	images/32bpp-None-jpeg.tiff \
-	$(PNMIMAGES) \
-	$(TIFFIMAGES)
-
-noinst_HEADERS = tifftest.h
-
-test_signed_tags_SOURCES = test_signed_tags.c
-test_signed_tags_LDADD = $(LIBTIFF)
-ascii_tag_SOURCES = ascii_tag.c
-ascii_tag_LDADD = $(LIBTIFF)
-long_tag_SOURCES = long_tag.c check_tag.c
-long_tag_LDADD = $(LIBTIFF)
-short_tag_SOURCES = short_tag.c check_tag.c
-short_tag_LDADD = $(LIBTIFF)
-strip_rw_SOURCES = strip_rw.c strip.c test_arrays.c test_arrays.h
-strip_rw_LDADD = $(LIBTIFF)
-rewrite_SOURCES = rewrite_tag.c
-rewrite_LDADD = $(LIBTIFF)
-raw_decode_SOURCES = raw_decode.c
-raw_decode_LDADD = $(LIBTIFF)
-custom_dir_SOURCES = custom_dir.c
-custom_dir_LDADD = $(LIBTIFF)
-
-if BUILD_STATIC
-rational_precision2double_SOURCES = rational_precision2double.c
-rational_precision2double_LDADD = $(LIBTIFF)
-rational_precision2double_LDFLAGS = -static
-
-test_write_read_tags_SOURCES = test_write_read_tags.c
-test_write_read_tags_LDADD = $(LIBTIFF)
-test_write_read_tags_LDFLAGS = -static
-
-test_transferfunction_write_read_SOURCES = test_transferfunction_write_read.c
-test_transferfunction_write_read_LDADD = $(LIBTIFF)
-test_transferfunction_write_read_LDFLAGS = -static
-endif
-
-custom_dir_EXIF_231_SOURCES = custom_dir_EXIF_231.c
-custom_dir_EXIF_231_LDADD = $(LIBTIFF)
-defer_strile_loading_SOURCES = defer_strile_loading.c
-defer_strile_loading_LDADD = $(LIBTIFF)
-defer_strile_writing_SOURCES = defer_strile_writing.c
-defer_strile_writing_LDADD = $(LIBTIFF)
-test_directory_SOURCES = test_directory.c
-test_directory_LDADD = $(LIBTIFF)
-test_IFD_enlargement_SOURCES = test_IFD_enlargement.c
-test_IFD_enlargement_LDADD = $(LIBTIFF)
-test_open_options_SOURCES = test_open_options.c
-test_open_options_LDADD = $(LIBTIFF)
-test_append_to_strip_SOURCES = test_append_to_strip.c
-test_append_to_strip_LDADD = $(LIBTIFF)
-test_ifd_loop_detection_CFLAGS = -DSOURCE_DIR=\"@srcdir@\"
-test_ifd_loop_detection_SOURCES = test_ifd_loop_detection.c
-test_ifd_loop_detection_LDADD = $(LIBTIFF)
-
-AM_CPPFLAGS = -I$(top_srcdir)/libtiff
-
-# memcheck: valgrind's memory access checker.
-#
-# The suppressions which come with valgrind are sometimes insufficient
-# to handle certain system library aspects which may be reported and
-# which are unrelated to libtiff.  When first starting with a new
-# system (or after a major system update), it is good to execute the
-# test suite (known to already be passing!) like 'make memcheck
-# VALGRIND_EXTRA_OPTS=--gen-suppressions=all' to create valgrind
-# suppression entries in the test log.  Make sure that none of the
-# suppressions are due to libtiff itself.  Tell valgrind about the
-# suppressions by creating a .valgrindrc file with content like:
-# --memcheck:suppressions=mysupp.supp
-memcheck:
-	$(MAKE) MEMCHECK='valgrind --tool=memcheck --leak-check=full --read-var-info=yes \
-	--error-exitcode=2 --track-origins=yes --num-callers=12 \
-	--quiet $(VALGRIND_EXTRA_OPTS)' check
-
-# ptrcheck: valgrind's experimental pointer checking tool.
-ptrcheck:
-	$(MAKE) MEMCHECK='valgrind --tool=exp-ptrcheck --quiet $(VALGRIND_EXTRA_OPTS)' check
-
-# tiff2bw is pretty lame so currently only the generated scripts
-# tiff2bw-palette-1c-8b.sh, tiff2bw-quad-lzw-compat.sh, and
-# tiff2bw-rgb-3c-8b.sh pass tests.
-generate-tiff2bw-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiff2bw-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiff2bw-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFF2BW\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-generate-tiff2rgba-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiff2rgba-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiff2rgba-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFF2RGBA\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-# Test rotations
-generate-tiffcrop-R90-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiffcrop-R90-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiffcrop-R90-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFFCROP -R90\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-# Test flip (mirror)
-generate-tiffcrop-doubleflip-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiffcrop-doubleflip-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiffcrop-doubleflip-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFFCROP -F both\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-# Test extracting a section 100 pixels wide and 100 pixels high
-generate-tiffcrop-extract-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiffcrop-extract-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiffcrop-extract-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFFCROP -U px -E top -X 60 -Y 60\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-# Test extracting the first and fourth quarters from the left side.
-generate-tiffcrop-extractz14-tests:
-	for file in $(TIFFIMAGES) ; \
-	do \
-	base=`basename $$file .tiff` ; \
-	testscript=$(srcdir)/tiffcrop-extractz14-$$base.sh ; \
-	( \
-	  echo "#!/bin/sh" ; \
-	  echo "# Generated file, master is Makefile.am" ; \
-	  echo ". \$${srcdir:-.}/common.sh" ; \
-	  echo "infile=\"\$$srcdir/$$file\"" ; \
-	  echo "outfile=\"o-tiffcrop-extractz14-$$base.tiff\"" ; \
-	  echo "f_test_convert \"\$$TIFFCROP -E left -Z1:4,2:4\" \$$infile \$$outfile" ; \
-	  echo "f_tiffinfo_validate \$$outfile" ; \
-	) > $$testscript ; \
-	chmod +x $$testscript ; \
-	done
-
-generate-tiffcrop-tests: \
-	generate-tiffcrop-R90-tests \
-	generate-tiffcrop-doubleflip-tests \
-	generate-tiffcrop-extract-tests \
-	generate-tiffcrop-extractz14-tests
-
-generate-tests: \
-	generate-tiff2bw-tests \
-	generate-tiff2rgba-tests \
-	generate-tiffcrop-tests
+dist-hook: doc-html doc-man
+	cp -r html $(distdir)/html-prebuilt
+	cp -r man $(distdir)/man-prebuilt
